@@ -2,7 +2,7 @@
 
 void    signal_error(void)
 {
-    ft_printf("Errore inaspettato client.\n");
+    printf("Errore inaspettato client.\n");
     exit(EXIT_FAILURE);
 }
 
@@ -32,7 +32,30 @@ int	ft_atoi(const char *str)
 	}
 	return (n * neg);
 }
+void	ft_chartobin(unsigned char c, int pid)
+{
+	int	bit;
 
+	bit = 0;
+	while (bit < 8)
+	{
+		if (c & 128)
+		{
+			if (kill(pid, SIGUSR2) == -1)
+				signal_error();
+		}
+		else
+		{
+			if (kill(pid, SIGUSR1) == -1)
+				signal_error();
+		}
+		c <<= 1;
+		bit++;
+		pause();
+		usleep(100);
+	}
+}
+/*
 void    ft_chartobin(unsigned char str, int pid)
 {
     int bit;
@@ -40,6 +63,7 @@ void    ft_chartobin(unsigned char str, int pid)
     bit = 0;
     while (bit < 8)
     {
+        //printf("%c\n", str);
         if (str & 128)
         {
             if (kill(pid, SIGUSR2) == -1)
@@ -56,16 +80,19 @@ void    ft_chartobin(unsigned char str, int pid)
         usleep(100);
     }
 }
+*/
 
 void ft_recieved(int sig)
 {
     static int  i;
 
+    if (sig == SIGUSR1)
+    {
+        printf("Messaggio inviato con successo\n");
+        exit(EXIT_SUCCESS);
+    }
     if (sig == SIGUSR2)
-        i++;
-    else if (sig == SIGUSR1)
-        ft_printf("Messaggio inviato con successo\n");
-
+        ++i;
 }
 
 void    ft_sent(char *str, int pid)
@@ -74,9 +101,7 @@ void    ft_sent(char *str, int pid)
 
     i = 0;
     while (str[i])
-    {
         ft_chartobin(str[i++], pid);
-    }
     ft_chartobin('\0', pid);
 }
 
@@ -94,6 +119,6 @@ int main(int ac, char **av)
         ft_sent(av[2], server_pid);
     }
     else
-        ft_printf("Errore: inserire PID e messaggio da inviare\n");
+        printf("Errore: inserire PID e messaggio da inviare\n");
     return(EXIT_FAILURE);
 }

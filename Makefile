@@ -19,17 +19,19 @@ CLI_O = client.o
 SRV_O = server.o
 INC = minitalk.h
 
+INCLUDES = -Ift_printf/ft_printf.h
+
 #Commands
 all: $(LIBFTPRINTF) $(CLIENT) $(SERVER)
 
 CLIENT: $(CLI_C) $(INC)
-	@ $(CC) $(FLAGS) $(LIBFTPRINTF) -o $@ $(CLI_C)
+	@ $(CC) $(FLAGS) $(INCLUDES) $(LIBFTPRINTF) -o $@ $(CLI_C)
 
 SERVER: $(SRV_C) $(INC)
-	@ $(CC) $(FLAGS) $(LIBFTPRINTF) -o $@ $(SRV_C)
+	@ $(CC) $(FLAGS) $(INCLUDES) $(LIBFTPRINTF) -o $@ $(SRV_C)
 
 %.o: %.c
-	@ $(CC) $(FLAGS) -c $< -o $@
+	@ $(CC) $(FLAGS) $(INCLUDES) -c $< -o $@
 
 $(LIBFTPRINTF):
 	@ $(MAKE) -C $(LIBFTPRINTF_DIR)
