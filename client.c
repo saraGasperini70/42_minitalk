@@ -47,7 +47,7 @@ void	ft_chartobin(unsigned char c, int pid)
 		else
 		{
 			if (kill(pid, SIGUSR1) == -1)
-				signal_error();
+                signal_error();
 		}
 		c <<= 1;
 		bit++;
@@ -82,40 +82,42 @@ void    ft_chartobin(unsigned char str, int pid)
 }
 */
 
-void ft_recieved(int sig)
-{
-    static int  i;
-
-    if (sig == SIGUSR1)
-    {
-        printf("Messaggio inviato con successo\n");
-        exit(EXIT_SUCCESS);
-    }
-    if (sig == SIGUSR2)
-        ++i;
-}
 
 void    ft_sent(char *str, int pid)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    while (str[i])
-        ft_chartobin(str[i++], pid);
-    ft_chartobin('\0', pid);
+	i = 0;
+	while (str[i])
+		ft_chartobin(str[i++], pid);
+	ft_chartobin('\0', pid);
 }
 
+void ft_recieved(int sig)
+{
+	static int	sent;
+
+	if (sig == SIGUSR1)
+	{
+		printf("%d Segnale inviato con successo.\n", ++sent);
+		exit(EXIT_SUCCESS);
+	}
+	if (sig == SIGUSR2)
+		++sent;
+}
 int main(int ac, char **av)
 {
-    int client_pid;
     int server_pid;
+    int client_pid;
 
     client_pid = getpid();
     if (ac == 3)
     {
+        printf("client pid: %d\n",client_pid);
         signal(SIGUSR1, ft_recieved);
         signal(SIGUSR2, ft_recieved);
         server_pid = ft_atoi(av[1]);
+        printf("Invio in corso...\n");
         ft_sent(av[2], server_pid);
     }
     else

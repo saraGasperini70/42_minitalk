@@ -1,156 +1,69 @@
 #include "minitalk.h"
-
-void	ft_bzero(void *s, size_t n)
+void    signal_error(void)
 {
-	size_t	i;
-
-	i = 0;
-	while (i < n)
-	{
-		*(unsigned char *)(s + i) = (0);
-		i++;
-	}
+    printf("Errore inaspettato server.\n");
+    exit(EXIT_FAILURE);
 }
 
-void    *ft_calloc_exit(int count, int size)
+void    ft_extended_action(char *c, int *received, int *client_pid, int *bit)
 {
-    int tot_size;
-    void *ret_value;
-
-    tot_size = count * size;
-    ret_value = malloc(tot_size);
-    if (!ret_value)
-        exit(EXIT_FAILURE);
-    ft_bzero(ret_value, tot_size);
-    return (ret_value);
-}
-
-int ft_recursive_power(int number, int power)
-{
-    if (power <= 0)
-        return (1);
-    else
-        return (number * ft_recursive_power(number, power - 1));
-}
-
-void    ft_receive_strlen(int *curr_bit, char **str, int *received, int signal)
-{
-    static int str_len;
-
-    str_len = 0;
-    if (signal == SIGUSR2)
-        str_len += ft_recursive_power(2, *curr_bit);
-    if (*curr_bit == 31)
+    printf("%c", *c);
+    if (*c == '\0')
     {
-        *received = 1;
-        *str = ft_calloc_exit(str_len + 1, sizeof(char));
-        *curr_bit = 0;
-        str_len = 0;
+        printf("\n%d: Messaggio ricevuto con successo: %d\n", *received, *client_pid);
+        *received = 0;
+        *c = 0;
+        if (kill(*client_pid, SIGUSR1) == -1)
+            signal_error();
         return ;
     }
-    (*curr_bit)++;
+    *bit = 0;
 }
 
-void	ft_putchar_fd(char c, int fd)
+void    ft_action(int signal, siginfo_t *info, void *context)
 {
-	write(fd, &c, 1);
-}
+    static int  client_pid;
+    static int  bit;
+    static char c;
+    static int  current_pid;
+    static int  received;
 
-void ft_putstr_fd(char *str, int fd)
-{
-    int i;
-
-    i = 0;
-    if (str == 0)
-        return ;
-    while (str[i] != '0')
-        ft_putchar_fd(str[i], fd);
-        i++;
-}
-
-
-void	ft_putendl_fd(char *s, int fd)
-{
-	ft_putstr_fd(s, fd);
-	ft_putchar_fd('\n', fd);
-}
-
-
-void	ft_putnbr_fd(int n, int fd)
-{
-	if (n == -2147483648)
-	{
-		ft_putchar_fd('-', fd);
-		ft_putchar_fd('2', fd);
-		ft_putnbr_fd(147483648, fd);
-		return ;
-	}
-	if (n < 0)
-	{
-		ft_putchar_fd('-', fd);
-		n = -n;
-	}
-	if (n > 9)
-	{
-		ft_putnbr_fd(n / 10, fd);
-		ft_putnbr_fd(n % 10, fd);
-	}
-	else
-	{
-		ft_putchar_fd(n + 48, fd);
-	}
-}	
-
-void    ft_restart_variables(int *len_received, char **str, int *i)
-{
-    *len_received = 0;
-    if (str)
+    (void)context;
+    if (!client_pid)
+        client_pid = info->si_pid;
+    current_pid = info->si_pid;
+    if (client_pid != current_pid)
     {
-        ft_putendl_fd(*str, 1);
-        free(*str);
-        *str = 0;
+        client_pid = current_pid;
+        bit = 0;
+        c = 0;
+        received = 0;
     }
-    *i = 0;
-}
-/*ft_calloc_exit*/
-void    ft_recieve_info_from_client(int signal)
-{
-    static int char_val = 0;
-    static int current_bit = 0;
-    static int received_length = 0;
-    static int i = 0;
-    static char *final_str = 0;
-
-    if (!received_length)
-    {
-        ft_receive_strlen(&current_bit, &final_str, &received_length, signal);
-    }
-    else
-    {
-        if (signal == SIGUSR2)
-            char_val += ft_recursive_power(2, current_bit);
-        if (current_bit == 7)
-        {
-            final_str[i++] = char_val;
-            current_bit = 0;
-            if (char_val == 0)
-                return (ft_restart_variables(&received_length, &final_str, &i));
-            char_val = 0;
-            return ;
-        }
-        current_bit++;
-    }
+    c |= (signal == SIGUSR2);
+    received++;
+    bit++;
+    if (bit == 8)
+        ft_extended_action(&c, &received, &client_pid, &bit);
+    c <<= 1;
+    usleep(100);
+    kill(client_pid, SIGUSR2);
 }
 
 int main(void)
 {
-    int server_pid;
+    int                 server_pid;
+    struct sigaction	act;  
 
-    server_pid = (int)(getpid());
-    ft_putnbr_fd(server_pid, 1);
-    ft_putchar_fd('\n', 1);
-    signal(SIGUSR1, ft_recieve_info_from_client);
-    signal(SIGUSR2, ft_recieve_info_from_client);
+    server_pid = getpid();
+    printf("Server PID: %i\n", server_pid);
+    act.sa_sigaction = ft_action;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = SA_SIGINFO;
     while (1)
-        usleep(WAIT_TIME);
+    {
+        sigaction(SIGUSR1, &act, 0);
+        sigaction(SIGUSR2, &act, 0);
+        pause();
+    }
+    return (EXIT_FAILURE);
 }

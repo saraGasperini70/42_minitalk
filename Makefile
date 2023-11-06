@@ -24,14 +24,14 @@ INCLUDES = -Ift_printf/ft_printf.h
 #Commands
 all: $(LIBFTPRINTF) $(CLIENT) $(SERVER)
 
-CLIENT: $(CLI_C) $(INC)
-	@ $(CC) $(FLAGS) $(INCLUDES) $(LIBFTPRINTF) -o $@ $(CLI_C)
+CLIENT: $(CLI_O) $(INC)
+	@ $(CC) $(FLAGS) $(LIBFTPRINTF) -o $@ $(CLI_O)
 
-SERVER: $(SRV_C) $(INC)
-	@ $(CC) $(FLAGS) $(INCLUDES) $(LIBFTPRINTF) -o $@ $(SRV_C)
+SERVER: $(SRV_O) $(INC)
+	@ $(CC) $(FLAGS) $(LIBFTPRINTF) -o $@ $(SRV_O)
 
 %.o: %.c
-	@ $(CC) $(FLAGS) $(INCLUDES) -c $< -o $@
+	@ $(CC) $(FLAGS) -c $< -o $@
 
 $(LIBFTPRINTF):
 	@ $(MAKE) -C $(LIBFTPRINTF_DIR)
@@ -46,4 +46,4 @@ fclean: clean
 
 re: fclean all
 
-PHONY: all clean fclean re
+.PHONY: all clean fclean re
