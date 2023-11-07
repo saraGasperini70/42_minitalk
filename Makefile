@@ -13,22 +13,23 @@ FLAGS = -Wextra -Wall -Werror
 RM = rm -rf
 
 # Minitalk Variables
-CLI_C = client.c
+CLI_C = client.c utilities.c
 SRV_C = server.c
-CLI_O = client.o
+CLI_O = client.o utilities.o
 SRV_O = server.o
 INC = minitalk.h
 
-INCLUDES = -Ift_printf/ft_printf.h
+INCLUDES = -I ft_printf
+LFLAGS =  -L ft_printf
 
 #Commands
 all: $(LIBFTPRINTF) $(CLIENT) $(SERVER)
 
-CLIENT: $(CLI_O) $(INC)
-	@ $(CC) $(FLAGS) $(LIBFTPRINTF) -o $@ $(CLI_O)
+$(CLIENT): $(CLI_O) $(INC)
+	@ $(CC) $(FLAGS) $(CLI_O) $(LIBFTPRINTF) -o $@ 
 
-SERVER: $(SRV_O) $(INC)
-	@ $(CC) $(FLAGS) $(LIBFTPRINTF) -o $@ $(SRV_O)
+$(SERVER): $(SRV_O) $(INC)
+	@ $(CC) $(FLAGS) $(SRV_O) $(LIBFTPRINTF) -o $@ 
 
 %.o: %.c
 	@ $(CC) $(FLAGS) -c $< -o $@

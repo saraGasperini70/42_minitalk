@@ -1,26 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minitalk.h                                         :+:      :+:    :+:   */
+/*   utilities.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sgasperi <sgasperi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/07 10:20:34 by sgasperi          #+#    #+#             */
-/*   Updated: 2023/11/07 12:40:01 by sgasperi         ###   ########.fr       */
+/*   Created: 2023/11/07 12:38:24 by sgasperi          #+#    #+#             */
+/*   Updated: 2023/11/07 12:38:54 by sgasperi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef MINITALK_H
-# define MINITALK_H
+#include "minitalk.h"
 
-# include <signal.h>
-# include <unistd.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include "ft_printf/ft_printf.h"
+int	ft_atoi(const char *str)
+{
+	int	c;
+	int	neg;
+	int	n;
 
-# define WAIT_TIME 100
-
-int	ft_atoi(const char *str);
-
-#endif
+	c = 0;
+	neg = 1;
+	n = 0;
+	while ((str[c] >= 9 && str[c] <= 13) || str[c] == 32)
+	{
+		c++;
+	}
+	if (str[c] == '-' || str[c] == '+')
+	{
+		if (str[c] == '-')
+			neg *= -1;
+		c++;
+	}
+	while (str[c] >= 48 && str[c] <= 57)
+	{
+		n = n * 10 + str[c] - 48;
+		c++;
+	}
+	return (n * neg);
+}
